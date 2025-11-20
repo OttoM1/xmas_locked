@@ -327,17 +327,29 @@ filter: saturate(1.1) contrast(1.06);
 
 
 
-
+#snowCanvas {
+    position: absolute;
+   top: 0;
+   left: 0;
+    width: 100%;    /* keep CSS size matching drawing size on high-DPI */
+    height: 28% !important;
+    pointer-events: none;
+    z-index: 1000;
+    display: block;
+  }
 
     </style>
 </head>
 
 <body>
-
+                            <canvas id="snowCanvas"></canvas>
 
 
     <header>
+
+
         <div>
+
             <p id="subtitle" style="margin-bottom: 8px;">Marin</p>
 
             <h1>Joulukalenteri</h1>
@@ -807,9 +819,127 @@ const YEAR = (new Date()).getFullYear(); // target year for the calendar (you ca
 </script>
 
 
+<script>
+    (() => {
+        const canvas = document.getElementById('snowCanvas');
+        const ctx = canvas.getContext('2d', { alpha: true });
+        let particles = [];
+        // 1. SIGNIFICANT REDUCTION: Reduced from 888 to 300 for a major performance boost
+        const MAX_PARTICLES = 32;
 
+        // Simplified Wind (can be removed entirely for more savings, but kept for realism)
+        let wind = 0;
+        let windTarget = 0;
+        const windChangeInterval = 4000; // ms
+        let lastWindChange = performance.now();
 
+        // device pixel ratio for crisp flakes
+        function setSize() {
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = Math.round(window.innerWidth * dpr);
+            canvas.height = Math.round(window.innerHeight * 0.98
+            );
+            canvas.style.width = window.innerWidth + 'px';
+            canvas.style.height = window.innerHeight + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // scale drawing to CSS pixels
+        }
+        setSize();
+        window.addEventListener('resize', setSize);
 
+        function rand(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        function createParticle() {
+            const radius = rand(1.0, 3.0); // Slightly less range, simpler
+            const speedY = rand(0.2, 0.8); // Simplified speed calculation
+            const alpha = rand(0.7, 1.0);
+
+            // 3. OPTIMIZATION: Pre-calculate the full color string
+            const color = `rgba(232,232,224,${alpha.toFixed(2)})`;
+
+            particles.push({
+                x: rand(0, window.innerWidth),
+                y: rand(-40, -8),
+                radius,
+                speedY,
+                // Removed 'drift' and 'swing' properties for lighter object state
+                // Use radius for oscillation phase for simple, varied movement
+                phase: Math.random() * Math.PI * 2,
+                color
+            });
+        }
+
+        function updateWind(now) {
+            if (now - lastWindChange > windChangeInterval) {
+                // Simplified wind target range
+                windTarget = rand(-0.4, 0.4);
+                lastWindChange = now;
+            }
+            // Faster, simpler wind transition
+            wind += (windTarget - wind) * 0.05;
+        }
+
+        function updateParticles(delta) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 2. SIMPLIFICATION: Removed expensive shadow properties entirely for performance
+            ctx.shadowBlur = 0;
+
+            particles.forEach(p => {
+                // 4. SIMPLIFICATION: Simpler vertical movement
+                p.y += p.speedY * 0.06 * delta;
+
+                // 4. SIMPLIFICATION: Simpler phase update and oscillation
+                p.phase += 0.03;
+                const oscillation = Math.sin(p.phase) * (p.radius * 0.4); // Oscillation based on size
+
+                // Simpler horizontal movement (just global wind + oscillation)
+                p.x += wind * 0.04 * delta + oscillation;
+
+                // 5. REMOVAL: Removed the radius shrinking/fading logic (p.radius *= 0.9995;)
+                // This saves a check and a multiplication inside the tight loop.
+
+                // Draw particle
+                ctx.beginPath();
+                // Ensure radius is always positive before drawing (Max(p.radius, 0.2) is not needed if we remove the shrink)
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+            });
+
+            // Lighter filter: only check if it's below the screen
+            // The x-axis check is removed as it's less critical for performance.
+            particles = particles.filter(p => p.y < window.innerHeight + 40);
+
+            // keep population topped up
+            while (particles.length < MAX_PARTICLES) createParticle();
+        }
+
+        // main animation loop with delta-time
+        let last = performance.now();
+        function animate(now = performance.now()) {
+            // Cap delta time to prevent massive jumps/lag when tab is inactive
+            const delta = Math.min(now - last, 100);
+            last = now;
+
+            updateWind(now);
+            updateParticles(delta);
+
+            requestAnimationFrame(animate);
+        }
+
+        // initial seed
+        for (let i = 0; i < MAX_PARTICLES; i++) {
+            createParticle();
+        }
+
+        // start
+        requestAnimationFrame(animate);
+
+        // Removed the check for prefers-reduced-motion to keep the code simpler and lighter overall.
+    })();
+</script>
 
 
 </body>
