@@ -357,7 +357,7 @@ filter: saturate(1.1) contrast(1.06);
         
         <div class="controls">
            <div style="visibility: hidden;" id="nextTimer" class="small">Seuraava luukku : —</div> 
-            <button  style="visibility: hidden;" id="openAllBtn" class="btn">Open all (dev)</button>
+            <button   id="openAllBtn" class="btn">Open all (dev)</button>
             <button style="visibility: hidden;" id="resetBtn" class="btn">Reset seen</button>
         </div>
     
@@ -572,7 +572,7 @@ filter: saturate(1.1) contrast(1.06);
 const YEAR = (new Date()).getFullYear(); // target year for the calendar (you can override via simulate param)
 
     const SURPRISES = {
-        1: { title: 'Ylläri', html: ' <p style="color: black;">Ylläri odottaa MUN kämpillä</p>' },
+        1: { title: 'Ylläri', html: ' <p style="color: black;">Joulukalenteri<br><br>???</p>' },
         2: { title: 'Bängeri', html: '<p><a style="color: black;" href="https://open.spotify.com/track/1EcReGfESece5aPkprId13?si=1ec0edc2d251430a">Open Spotify</a></p>' },
         3: { title: 'Munch', html: '<p style="color: black;">Kuponki vapaavalintaiseen ravintolaan.</p>' },
         4: { title: 'Huhhuh', html: '<video src="marssi.mp4" poster="marssi.mp4" preload="auto" playsinline muted loop alt="mp4" style="width:280px; height:auto; border-radius:8px;margin-top:8px">' },
@@ -665,7 +665,6 @@ const YEAR = (new Date()).getFullYear(); // target year for the calendar (you ca
                         countdown.className = 'small';
                         countdown.setAttribute('data-unlock-ts', unlockTs);
                         countdown.textContent = formatCountdown(unlockTs - getToday(simulate).getTime());
-                        // keep reference
                         countdownSpans.set(i, countdown);
 
                         overlay.appendChild(document.createElement('div'));
