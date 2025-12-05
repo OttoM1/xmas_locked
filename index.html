@@ -638,7 +638,7 @@ const YEAR = (new Date()).getFullYear(); // target year for the calendar (you ca
                 const year = now.getFullYear();
                 // we assume December calendar — adjust if you want to change month
                 for (let i = 1; i <= TOTAL_DAYS; i++) {
-                    const slotDate = new Date(year, 11, i, 0, 0, 0, 0);
+                    const slotDate = new Date(year, 11, i, -1, 0, 0, 0);
                     const unlockTs = slotDate.getTime();
                     const unlocked = openAllMode || (getToday(simulate).getTime() >= unlockTs);
                     const seen = isSeen(i);
